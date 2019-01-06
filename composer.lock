@@ -701,12 +701,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/r-erema/DataGrabber.git",
-                "reference": "bd9ef27256364b78ef45e7a99e863f5bc304a6cd"
+                "reference": "80397eb54429be4f5bb95f83c72d63e1f7e0410b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/r-erema/DataGrabber/zipball/bd9ef27256364b78ef45e7a99e863f5bc304a6cd",
-                "reference": "bd9ef27256364b78ef45e7a99e863f5bc304a6cd",
+                "url": "https://api.github.com/repos/r-erema/DataGrabber/zipball/80397eb54429be4f5bb95f83c72d63e1f7e0410b",
+                "reference": "80397eb54429be4f5bb95f83c72d63e1f7e0410b",
                 "shasum": ""
             },
             "require": {
@@ -735,7 +735,7 @@
                 "source": "https://github.com/r-erema/DataGrabber/tree/master",
                 "issues": "https://github.com/r-erema/DataGrabber/issues"
             },
-            "time": "2019-01-05T19:28:51+00:00"
+            "time": "2019-01-06T12:45:32+00:00"
         },
         {
             "name": "ralouphie/getallheaders",
