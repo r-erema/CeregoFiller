@@ -2,13 +2,10 @@
 
 declare(strict_types = 1);
 
-use CeregoFiller\GoogleClient,
-    DataGrabber\DataGrabber,
-    DataGrabber\Strategies\CambridgeDictionary,
-    GuzzleHttp\Client,
-    Symfony\Component\DomCrawler\Crawler;
+use CeregoFiller\GoogleClient;
+    use CeregoFiller\Utils\Helpers;
 
-require __DIR__ . '/vendor/autoload.php';
+    require __DIR__ . '/vendor/autoload.php';
 $config = require __DIR__ . '/configs/config.php';
 
 /** @noinspection PhpUnhandledExceptionInspection */
@@ -20,66 +17,57 @@ $response = $service->files->export($config['googleDriveFileId'], 'text/csv');
 $content = (string) $response->getBody();
 $words = explode("\r\n", $content);
 
-$strategy = new CambridgeDictionary(new Crawler());
-$grabber = new DataGrabber($strategy);
-$data = [];
+$extractor = new \CeregoFiller\MerriamWebsterApiExtractor();
+
+$preparedWords = [];
 foreach ($words as $word) {
-    $strategy->setWordToFind($word);
-    $data[] = $grabber->grabRemotely(new Client());
+
+    $json = file_get_contents(sprintf($config['merriam-webster-api-url-tpl'], urlencode($word)));
+    $wordData = json_decode($json, true);
+
+    foreach ($wordData as $data) {
+
+        if (!isset($data['def'])) {
+            continue;
+        }
+
+        $extractor->setData($data);
+        $examples = $extractor->getExamples();
+        if (count($examples) > 0) {
+            $definitions = $extractor->getDefinitions();
+            $partOfSpeech = $extractor->getPartOfSpeech();
+            $preparedWords[$word][] = [
+                'examples' => $examples,
+                'definitions' => $definitions,
+                'partOfSpeech' => $partOfSpeech
+            ];
+        }
+    }
 }
+
+$maxExamplesCount = Helpers::getRecursiveMaxCountItemsInKey($preparedWords, 'examples');
+$maxExamplesCount = $maxExamplesCount > 9 ? 9 : $maxExamplesCount;
 
 $toCSV = [
     ['anchor_text', 'association_text']
 ];
-$maxSentencesCols = 0;
-foreach ($data as $row) {
 
-    if (!isset($row['English'])) {
-        continue;
-    }
+for ($i = 1; $i <= $maxExamplesCount; $i++) {
+    $toCSV[0][] = "sentence_{$i}_text";
+}
 
-    foreach ($row['English'] as $word) {
-        $anchorText = "{$word[CambridgeDictionary::DATA_KEY_WORD]} ({$word[CambridgeDictionary::DATA_KEY_TYPE_OF_WORD]})";
-
-        $associationText = '';
-        $examples = [];
-
-        foreach ($word[CambridgeDictionary::DATA_KEY_MEANINGS_AND_EXAMPLES] as $i =>$meaningsAndExamples) {
-            $number = count($word[CambridgeDictionary::DATA_KEY_MEANINGS_AND_EXAMPLES]) > 1 ? $i + 1 . '. ' : '';
-            $associationText .= "{$number}{$meaningsAndExamples[CambridgeDictionary::DATA_KEY_MEANING]}" . PHP_EOL;
-
-            $examples[] = $meaningsAndExamples[CambridgeDictionary::DATA_KEY_EXAMPLES];
-        }
-
-        /** @noinspection SlowArrayOperationsInLoopInspection */
-        $examples = array_merge(...$examples);
-        $examplesCount = count($examples);
-        $maxSentencesCols = $examplesCount > $maxSentencesCols ? $examplesCount : $maxSentencesCols;
-        $maxSentencesCols = $maxSentencesCols > 9 ? 9 : $maxSentencesCols;
-
-        $examples = array_slice($examples, 0, 9);
-
-        for ($i = 0; $i < 9; $i++) {
-            if (!isset($examples[$i])) {
-                $examples[$i] = ' ';
-            }
-        }
-
-        foreach ($examples as &$example) {
-            $example = str_replace($word[CambridgeDictionary::DATA_KEY_WORD], "*{$word[CambridgeDictionary::DATA_KEY_WORD]}*", $example);
-        }
-        unset($example);
-
-        $csvRow = [$anchorText, $associationText];
-        foreach ($examples as $example) {
-            $csvRow[] = $example;
+foreach ($preparedWords as $word => $data) {
+    foreach ($data as $dataRow) {
+        $csvRow = [
+            "{$word} [{$dataRow['partOfSpeech']}]",
+            Helpers::createListString($dataRow['definitions']),
+        ];
+        $examples = array_slice($dataRow['examples'], 0, $maxExamplesCount);
+        for ($i = 0; $i < $maxExamplesCount; $i++) {
+            $csvRow[] = $examples[$i] ?? ' ';
         }
         $toCSV[] = $csvRow;
     }
-}
-
-for ($i = 1; $i <= $maxSentencesCols; $i++) {
-    $toCSV[0][] = "sentence_{$i}_text";
 }
 
 $fp = fopen('result.csv', 'wb');

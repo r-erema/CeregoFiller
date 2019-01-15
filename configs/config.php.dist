@@ -1,5 +1,6 @@
 <?php
 
 return [
-    'googleDriveFileId' => '1P8iegfI9KEW2gj2PauS9UqqKZvS2Zb8PtfOGxtpHrTU'
+    'googleDriveFileId' => '1P8iegfI9KEW2gj2PauS9UqqKZvS2Zb8PtfOGxtpHrTU',
+    'merriam-webster-api-url' => 'https://dictionaryapi.com/api/v3/references/learners/json/%s?key=7493378d-5eb3-403e-8333-be9b04ebd8fd'
 ];
