@@ -22,7 +22,7 @@ $extractor = new \CeregoFiller\MerriamWebsterApiExtractor();
 $preparedWords = [];
 foreach ($words as $word) {
 
-    $json = file_get_contents(sprintf($config['merriam-webster-api-url-tpl'], urlencode($word)));
+    $json = file_get_contents(sprintf($config['merriam-webster-api-url-tpl'], urlencode($word), urlencode($word)));
     $wordData = json_decode($json, true);
 
     foreach ($wordData as $data) {
@@ -36,7 +36,7 @@ foreach ($words as $word) {
         if (count($examples) > 0) {
             $definitions = $extractor->getDefinitions();
             $partOfSpeech = $extractor->getPartOfSpeech();
-            $preparedWords[$word][] = [
+            $preparedWords[$data['meta']['stems'][0]][] = [
                 'examples' => $examples,
                 'definitions' => $definitions,
                 'partOfSpeech' => $partOfSpeech

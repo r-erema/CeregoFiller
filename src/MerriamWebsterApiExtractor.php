@@ -9,7 +9,7 @@ class MerriamWebsterApiExtractor
 
 	private $data;
 
-	public function getDefinitions(bool $onlyWithExmples = true): array
+	public function getDefinitions(): array
 	{
 		return $this->data['shortdef'];
 	}
@@ -18,7 +18,7 @@ class MerriamWebsterApiExtractor
 	{
 		$definitions = [];
 		foreach (Helpers::recursiveFindInArray($this->data['def'], 't') as $definition) {
-			$definitions[] = str_replace(['{wi}', '{/wi}', '{it}', '{/it}'], '*', $definition);
+			$definitions[] = str_replace(['{wi}', '{/wi}', '{it}', '{/it}', '{phrase}', '{/phrase}'], '*', $definition);
 		}
 		return $definitions;
 	}
