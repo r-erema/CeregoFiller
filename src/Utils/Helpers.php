@@ -48,7 +48,7 @@ class Helpers
 		$list = '';
 		foreach ($array as $i => $item) {
 			$number = $i + 1;
-			$list .= "{$number}. {$item}{$rowPostfix}";
+			$list .= "{$number}. {$item} |{$rowPostfix}";
 		}
 		return $list;
 	}
