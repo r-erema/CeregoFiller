@@ -23,7 +23,7 @@ class Helpers
 		$recursive = new \RecursiveIteratorIterator($iterator, \RecursiveIteratorIterator::CHILD_FIRST);
 		foreach ($recursive as $key => $value) {
 			if ($key === $needle) {
-				$currentCount = count($value);
+				$currentCount = is_countable($value) ? count($value) : 1;
 				$maxCount = $maxCount < $currentCount ? $currentCount : $maxCount;
 			}
 		}

@@ -2,8 +2,8 @@
 
 declare(strict_types = 1);
 
-use CeregoFiller\GoogleClient;
-    use CeregoFiller\Utils\Helpers;
+use CeregoFiller\GoogleClient,
+	CeregoFiller\Utils\Helpers;
 
     require __DIR__ . '/vendor/autoload.php';
 $config = require __DIR__ . '/configs/config.php';
@@ -36,11 +36,20 @@ foreach ($words as $word) {
         if (count($examples) > 0) {
             $definitions = $extractor->getDefinitions();
             $partOfSpeech = $extractor->getPartOfSpeech();
-            $preparedWords[$data['meta']['stems'][0]][] = [
+
+            $preparedWord = [
                 'examples' => $examples,
                 'definitions' => $definitions,
                 'partOfSpeech' => $partOfSpeech
             ];
+
+
+            if (isset($data['artl'])) {
+                $imageName = pathinfo($data['artl'][array_key_first($data['artl'])]['artid'])['filename'];
+                $preparedWord['imageUrl'] = "http://www.learnersdictionary.com/art/ld/{$imageName}.gif";
+            }
+
+            $preparedWords[$data['meta']['stems'][0]][] = $preparedWord;
         }
     }
 }
@@ -48,12 +57,18 @@ foreach ($words as $word) {
 $maxExamplesCount = Helpers::getRecursiveMaxCountItemsInKey($preparedWords, 'examples');
 $maxExamplesCount = $maxExamplesCount > 9 ? 9 : $maxExamplesCount;
 
+$issetImage = Helpers::getRecursiveMaxCountItemsInKey($preparedWords, 'imageUrl') > 0;
+
 $toCSV = [
     ['anchor_text', 'association_text']
 ];
 
 for ($i = 1; $i <= $maxExamplesCount; $i++) {
     $toCSV[0][] = "sentence_{$i}_text";
+}
+
+if ($issetImage) {
+    $toCSV[0][] = 'anchor_image';
 }
 
 foreach ($preparedWords as $word => $data) {
@@ -66,6 +81,9 @@ foreach ($preparedWords as $word => $data) {
         for ($i = 0; $i < $maxExamplesCount; $i++) {
             $csvRow[] = $examples[$i] ?? ' ';
         }
+
+        $csvRow[] = $dataRow['imageUrl'] ?? ' ';
+
         $toCSV[] = $csvRow;
     }
 }
