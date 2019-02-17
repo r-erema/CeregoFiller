@@ -22,8 +22,8 @@ class OxfordDictionaryEntry implements LexicalEntry, PronunciationFilesGetterInt
 
     public function getSentences(): array
     {
-        return array_map(function (string $sentence) {
-            $sentence = strtoupper($sentence);
+        return array_map(function (string $sentence): string {
+            $sentence = ucfirst($sentence);
             return "**{$sentence}";
         }, $this->entry->getSentences());
     }
