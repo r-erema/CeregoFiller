@@ -2,8 +2,11 @@
 
 declare(strict_types = 1);
 
-use CeregoFiller\GoogleClient,
-	CeregoFiller\Utils\Helpers;
+use CeregoFiller\Clients\OxfordClient,
+    CeregoFiller\Extractors\OxfordExtractor,
+    CeregoFiller\GoogleClient,
+    CeregoFiller\Utils\Helpers,
+    CeregoFiller\Decorators\OxfordDictionaryEntry as Decorator;
 
     require __DIR__ . '/vendor/autoload.php';
 $config = require __DIR__ . '/configs/config.php';
@@ -17,47 +20,38 @@ $response = $service->files->export($config['googleDriveFileId'], 'text/csv');
 $content = (string) $response->getBody();
 $words = explode("\r\n", $content);
 
-$extractor = new \CeregoFiller\MerriamWebsterApiExtractor();
+$client = new OxfordClient('en', $config['oxford_app_id'], $config['oxford_app_key']);
+$extractor = new OxfordExtractor();
 
 $preparedWords = [];
 foreach ($words as $word) {
 
-    $json = file_get_contents(sprintf($config['merriam-webster-api-url-tpl'], urlencode($word), urlencode($word)));
-    $wordData = json_decode($json, true);
-
-    foreach ($wordData as $data) {
-
-        if (!isset($data['def'])) {
-            continue;
-        }
-
-        $extractor->setData($data);
-        $examples = $extractor->getExamples();
-        if (count($examples) > 0) {
-            $definitions = $extractor->getDefinitions();
-            $partOfSpeech = $extractor->getPartOfSpeech();
-
-            $preparedWord = [
-                'examples' => $examples,
-                'definitions' => $definitions,
-                'partOfSpeech' => $partOfSpeech
-            ];
-
-
-            if (isset($data['artl'])) {
-                $imageName = pathinfo($data['artl'][array_key_first($data['artl'])]['artid'])['filename'];
-                $preparedWord['imageUrl'] = "http://www.learnersdictionary.com/art/ld/{$imageName}.gif";
-            }
-
-            $preparedWords[$data['meta']['stems'][0]][] = $preparedWord;
-        }
+    try {
+        $json = $client->getWordJsonData($word);
+    } catch (\GuzzleHttp\Exception\GuzzleException $e) {
+        continue;
     }
+    $extractor->setWordJsonSourceData($json);
+
+    $word = $extractor->getSourceWord();
+    $lexicalEntries = $extractor->getLexicalEntries();
+    foreach ($lexicalEntries as $lexicalEntry) {
+        $preparedWords[$word][] = [
+            'partOfSpeech' => $lexicalEntry->getLexicalCategory(),
+            'examples' => $lexicalEntry->getSentences(),
+            'definitions' => $lexicalEntry->getDefinitions(),
+            'sounds' => $lexicalEntry->getPronunciationFiles()
+        ];
+    }
+
+
 }
 
 $maxExamplesCount = Helpers::getRecursiveMaxCountItemsInKey($preparedWords, 'examples');
 $maxExamplesCount = $maxExamplesCount > 9 ? 9 : $maxExamplesCount;
 
-$issetImage = Helpers::getRecursiveMaxCountItemsInKey($preparedWords, 'imageUrl') > 0;
+$maxSoundsCount = Helpers::getRecursiveMaxCountItemsInKey($preparedWords, 'sounds');
+$maxSoundsCount = $maxSoundsCount > 9 ? 9 : $maxSoundsCount;
 
 $toCSV = [
     ['anchor_text', 'association_text']
@@ -67,11 +61,19 @@ for ($i = 1; $i <= $maxExamplesCount; $i++) {
     $toCSV[0][] = "sentence_{$i}_text";
 }
 
-if ($issetImage) {
-    $toCSV[0][] = 'anchor_image';
+for ($i = 1; $i <= $maxSoundsCount; $i++) {
+    $toCSV[0][] = "association_{$i}_sound";
 }
 
+
 foreach ($preparedWords as $word => $data) {
+
+    try {
+        $inflections = $client->getLemmaJsonData($word);
+    } catch (\GuzzleHttp\Exception\GuzzleException $e) {
+        continue;
+    }
+
     foreach ($data as $dataRow) {
         $csvRow = [
             "{$word} [{$dataRow['partOfSpeech']}]",
@@ -82,7 +84,12 @@ foreach ($preparedWords as $word => $data) {
             $csvRow[] = $examples[$i] ?? ' ';
         }
 
-        $csvRow[] = $dataRow['imageUrl'] ?? ' ';
+        if ($maxSoundsCount > 0) {
+            $sounds = array_slice($dataRow['sounds'], 0, $maxSoundsCount);
+            for ($i = 0; $i < $maxSoundsCount; $i++) {
+                $csvRow[] = $sounds[$i] ?? ' ';
+            }
+        }
 
         $toCSV[] = $csvRow;
     }
