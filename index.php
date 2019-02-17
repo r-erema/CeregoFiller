@@ -5,10 +5,9 @@ declare(strict_types = 1);
 use CeregoFiller\Clients\OxfordClient,
     CeregoFiller\Extractors\OxfordExtractor,
     CeregoFiller\GoogleClient,
-    CeregoFiller\Utils\Helpers,
-    CeregoFiller\Decorators\OxfordDictionaryEntry as Decorator;
+    CeregoFiller\Utils\Helpers;
 
-    require __DIR__ . '/vendor/autoload.php';
+require __DIR__ . '/vendor/autoload.php';
 $config = require __DIR__ . '/configs/config.php';
 
 /** @noinspection PhpUnhandledExceptionInspection */
