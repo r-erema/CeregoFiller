@@ -6,7 +6,7 @@ use CeregoFiller\Entities\LexicalEntry,
     CeregoFiller\Entities\PronunciationFilesGetterInterface,
     CeregoFiller\Entities\OxfordDictionary\LexicalEntry as OxfordDictionaryLexicalEntry;
 
-class OxfordDictionaryEntry implements LexicalEntry, PronunciationFilesGetterInterface
+class OxfordDictionaryCeregoEntry implements LexicalEntry, PronunciationFilesGetterInterface
 {
     private $entry;
 

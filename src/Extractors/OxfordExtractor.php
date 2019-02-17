@@ -3,7 +3,7 @@ declare(strict_types = 1);
 
 namespace CeregoFiller\Extractors;
 
-use CeregoFiller\Decorators\OxfordDictionaryEntry as Decorator,
+use CeregoFiller\Decorators\OxfordDictionaryCeregoEntry as Decorator,
     CeregoFiller\Entities\OxfordDictionary\LexicalEntry;
 
 class OxfordExtractor implements ExtractorInterface, JsonSourceDataSetter
