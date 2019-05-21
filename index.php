@@ -5,7 +5,9 @@ declare(strict_types = 1);
 use CeregoFiller\Clients\OxfordClient,
     CeregoFiller\Extractors\OxfordExtractor,
     CeregoFiller\GoogleClient,
-    CeregoFiller\Utils\Helpers;
+    CeregoFiller\Utils\Helpers,
+    GuzzleHttp\Exception\GuzzleException,
+    GuzzleHttp\Psr7\Response;
 
 require __DIR__ . '/vendor/autoload.php';
 $config = require __DIR__ . '/configs/config.php';
@@ -14,7 +16,7 @@ $config = require __DIR__ . '/configs/config.php';
 $client = GoogleClient::create(__DIR__ . '/configs/credentials.json', __DIR__ . '/configs/token.json');
 $service = new Google_Service_Drive($client);
 
-/** @var \GuzzleHttp\Psr7\Response $response */
+/** @var Response $response */
 $response = $service->files->export($config['googleDriveFileId'], 'text/csv');
 $content = (string) $response->getBody();
 $words = explode("\r\n", $content);
@@ -27,7 +29,7 @@ foreach ($words as $word) {
 
     try {
         $json = $client->getWordJsonData($word);
-    } catch (\GuzzleHttp\Exception\GuzzleException $e) {
+    } catch (GuzzleException $e) {
         continue;
     }
     $extractor->setWordJsonSourceData($json);
