@@ -18,14 +18,16 @@ class LexicalEntry implements LexicalEntryInterface, PronunciationFilesGetterInt
 
     public function getLexicalCategory(): string
     {
-        return strtolower($this->entryData['lexicalCategory']);
+        return strtolower($this->entryData['lexicalCategory']['text']);
     }
 
     public function getSentences(): array
     {
-        $sentences = array_map(function (array $sense): array {
+        $sentences = array_map(static function (array $sense): array {
             if (isset($sense['examples'])) {
-                return array_values(array_merge(...$sense['examples']));
+                return array_map(static function (array $example): string {
+                    return $example['text'];
+                }, $sense['examples']);
             }
             return [];
         }, $this->entryData['entries'][0]['senses']);

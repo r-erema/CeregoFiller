@@ -22,7 +22,7 @@ class OxfordDictionaryCeregoEntry implements LexicalEntry, PronunciationFilesGet
 
     public function getSentences(): array
     {
-        return array_map(function (string $sentence): string {
+        return array_map(static function (string $sentence): string {
             $sentence = ucfirst($sentence);
             return "**{$sentence}";
         }, $this->entry->getSentences());

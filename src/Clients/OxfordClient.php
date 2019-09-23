@@ -20,8 +20,8 @@ class OxfordClient extends Client implements GettingJsonData
         parent::__construct($config);
     }
 
-    public const WORD_DATA_URL_TEMPLATE = 'https://od-api.oxforddictionaries.com:443/api/v1/entries/%s/%s',
-                 LEMMA_URL_TEMPLATE = 'https://od-api.oxforddictionaries.com:443/api/v1/inflections/%s/%s';
+    public const WORD_DATA_URL_TEMPLATE = 'https://od-api.oxforddictionaries.com/api/v2/entries/%s/%s',
+                 LEMMA_URL_TEMPLATE = 'https://od-api.oxforddictionaries.com/api/v2/lemmas/%s/%s';
 
     /**
      * @param string $word
@@ -33,6 +33,7 @@ class OxfordClient extends Client implements GettingJsonData
         $url = sprintf(self::WORD_DATA_URL_TEMPLATE, $this->dictionaryLanguage, strtolower($word));
         $response = $this->request('GET', $url, [
             'headers' => [
+                'Accept' => 'application/json',
                 'app_id' => $this->appId,
                 'app_key' => $this->appKey,
             ]
@@ -50,6 +51,7 @@ class OxfordClient extends Client implements GettingJsonData
         $url = sprintf(self::LEMMA_URL_TEMPLATE, $this->dictionaryLanguage, strtolower($word));
         $response = $this->request('GET', $url, [
             'headers' => [
+                'Accept' => 'application/json',
                 'app_id' => $this->appId,
                 'app_key' => $this->appKey,
             ]
