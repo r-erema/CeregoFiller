@@ -2,7 +2,7 @@
 
 return [
     'googleDriveFileId' => '1P8iegfI9KEW2gj2PauS9UqqKZvS2Zb8PtfOGxtpHrTU',
-    'merriam-webster-api-url-tpl' => 'https://dictionaryapi.com/api/v3/references/learners/json/%s?key=7493378d-5eb3-403e-8333-be9b04ebd8fd&keyword=%s'
+    'merriam-webster-api-url-tpl' => 'https://dictionaryapi.com/api/v3/references/learners/json/%s?key=7493378d-5eb3-403e-8333-be9b04ebd8fd&keyword=%s',
 
     'oxford_app_id' => 'f6ff88cb',
     'oxford_app_key' => 'e97c52e7d7bfd0e4a75d07566219db9a'
