@@ -2,16 +2,8 @@
     "require": {
         "php": ">=7.2",
         "ext-json": "*",
-        "r.erema/data-grabber": "dev-master",
         "google/apiclient": "^2.0"
     },
-    "minimum-stability": "dev",
-    "repositories": [
-        {
-            "type": "vcs",
-            "url":  "git://github.com/r-erema/DataGrabber.git"
-        }
-    ],
     "autoload": {
         "psr-4": {"CeregoFiller\\":"src/"}
     }
